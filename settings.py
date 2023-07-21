@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     def new():
         try:
             settings = Settings(_env_file='.env')
+            settings.API_SUPERUSER_PASSWORD = str(settings.API_SUPERUSER_PASSWORD)
             os.environ.update({
                 "AWS_ACCESS_KEY_ID": settings.YANDEX_OBJECT_STORAGE_KEY_ID
                 if settings.YANDEX_OBJECT_STORAGE_KEY_ID else '',

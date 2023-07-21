@@ -12,7 +12,7 @@ from service.model.excel_model import FacilityExcelItemServiceModel
 from db.model.facility import Facility
 
 
-class ExcelController:
+class ExcelService:
     def __init__(self, async_session):
         self.async_session = async_session
 
