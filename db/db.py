@@ -20,8 +20,7 @@ class DB:
         self.engine = create_async_engine(
             db_conn_str,
             connect_args=connect_args,
-            pool_size=20,
-            max_overflow=60,
+            pool_size=20
         )
         self.async_session = async_sessionmaker(self.engine, expire_on_commit=False)
 

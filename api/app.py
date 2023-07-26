@@ -1,7 +1,12 @@
+import os
 import time
-from fastapi import FastAPI, Request, Response
+
+import starlette.exceptions
+from fastapi import FastAPI, Request, Response, HTTPException
+from fastapi.exceptions import ValidationException
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
+from starlette.responses import JSONResponse
 
 from api.admin import setup_admin
 
@@ -15,7 +20,11 @@ def setup_app(app: FastAPI):
         response: Response = await call_next(request)
         process_time = time.time() - start_time
         response.headers["X-Process-Time"] = str(process_time)
-        logger.info(f'[{request.client.host}] {request.method} {request.url.path} [{response.status_code}] {process_time:.3f}')
+        logger.info(
+            f'[{request.client.host}] [{os.getpid()}] '
+            f'{request.method} {request.url.path} '
+            f'[{response.status_code}] {process_time:.3f}'
+        )
         return response
 
     app.add_middleware(
@@ -26,12 +35,28 @@ def setup_app(app: FastAPI):
         allow_headers=["*"],
     )
 
+    def exception_handler(request: Request, exception: Exception):
+        if isinstance(exception, ValidationException):
+            exception: ValidationException
+            return JSONResponse(content=exception.errors(),status_code=422)
+        elif isinstance(exception, starlette.exceptions.HTTPException):
+            exception: HTTPException
+            exception_body = exception.detail
+            exception_status = exception.status_code
+            if isinstance(exception_body, dict):
+                return JSONResponse(content=exception_body, status_code=exception_status)
+            else:
+                return Response(content=exception_body, status_code=exception_status)
+        else:
+            logger.debug(type(exception))
+            logger.error(exception)
+            return JSONResponse(content={}, status_code=500)
+    for i in range(400, 600):
+        app.add_exception_handler(i, exception_handler)
+
     setup_admin(app)
 
-    app.include_router(user_router, prefix='/api/v1')
-    # app.include_router(log_group_router, prefix='/api/v1')
-    # app.include_router(log_level_router, prefix='/api/v1')
-    # app.include_router(log_item_router, prefix='/api/v1')
+    app.include_router(user_router, prefix='/v1')
 
 
 app = FastAPI(

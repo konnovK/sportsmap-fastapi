@@ -51,7 +51,7 @@ class UserService:
                 await session.commit()
                 await session.refresh(created_user)
             except IntegrityError:
-                raise UserAlreadyExistsServiceException
+                raise UserAlreadyExistsServiceException("Пользователь с таким email уже существует.")
         return UserServiceModel.model_validate(created_user)
 
     async def update(self, pk: USER_PK_TYPE, user_update_data: UserUpdateServiceModel) -> UserServiceModel:
@@ -66,7 +66,7 @@ class UserService:
             session: AsyncSession
             selected_user: User = (await session.execute(sa.select(User).where(User.id == pk))).scalar()
             if selected_user is None:
-                raise UserNotFoundServiceException
+                raise UserNotFoundServiceException("Пользователь с таким id не существует.")
 
             if user_update_data.password is not None:
                 new_password_hash = UserService._hash_password(selected_user.email, user_update_data.password)
@@ -93,7 +93,7 @@ class UserService:
             session: AsyncSession
             selected_user: User = (await session.execute(sa.select(User).where(User.id == pk))).scalar()
             if selected_user is None:
-                raise UserNotFoundServiceException
+                raise UserNotFoundServiceException("Пользователь с таким id не существует.")
             await session.delete(selected_user)
             await session.commit()
 
@@ -107,7 +107,23 @@ class UserService:
             session: AsyncSession
             selected_user: User = (await session.execute(sa.select(User).where(User.id == pk))).scalar()
             if selected_user is None:
-                raise UserNotFoundServiceException
+                raise UserNotFoundServiceException("Пользователь с таким id не существует.")
+            return UserServiceModel.model_validate(selected_user)
+
+    async def get_by_email_and_password(self, email: str, password: str) -> UserServiceModel:
+        """
+        :raise UserNotFoundServiceException:
+        :param email:
+        :param password:
+        :return:
+        """
+        async with self.async_session() as session:
+            session: AsyncSession
+            hash_password = self._hash_password(email, password)
+            stmt = sa.select(User).where(User.email == email).where(User.password_hash == hash_password)
+            selected_user: User = (await session.execute(stmt)).scalar()
+            if selected_user is None:
+                raise UserNotFoundServiceException("Неправильный email или пароль.")
             return UserServiceModel.model_validate(selected_user)
 
     async def check_exists_by_id(self, pk: USER_PK_TYPE) -> bool:

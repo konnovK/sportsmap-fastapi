@@ -1,30 +1,65 @@
-class UserAlreadyExistsServiceException(Exception):
-    pass
+from fastapi import HTTPException
 
 
-class UserNotFoundServiceException(Exception):
-    pass
+class UserAlreadyExistsServiceException(HTTPException):
+    def __init__(self, msg: str):
+        super().__init__(
+            status_code=409,
+            detail={"message": msg}
+        )
 
 
-class FacilityAlreadyExistsServiceException(Exception):
-    pass
+class UserNotFoundServiceException(HTTPException):
+    def __init__(self, msg: str):
+        super().__init__(
+            status_code=400,
+            detail={"message": msg}
+        )
 
 
-class FacilityNotFoundServiceException(Exception):
-    pass
+class FacilityAlreadyExistsServiceException(HTTPException):
+    def __init__(self, msg: str):
+        super().__init__(
+            status_code=409,
+            detail={"message": msg}
+        )
 
 
-class EmailPasswordRefreshAlreadyExistsException(Exception):
-    pass
+class FacilityNotFoundServiceException(HTTPException):
+    def __init__(self, msg: str):
+        super().__init__(
+            status_code=400,
+            detail={"message": msg}
+        )
 
 
-class EmailPasswordRefreshNotFoundException(Exception):
-    pass
+class EmailPasswordRefreshAlreadyExistsException(HTTPException):
+    def __init__(self, msg: str):
+        super().__init__(
+            status_code=409,
+            detail={"message": msg}
+        )
 
 
-class EmailSubscriberAlreadyExistsException(Exception):
-    pass
+class EmailPasswordRefreshNotFoundException(HTTPException):
+    def __init__(self, msg: str):
+        super().__init__(
+            status_code=400,
+            detail={"message": msg}
+        )
 
 
-class EmailSubscriberNotFoundException(Exception):
-    pass
+class EmailSubscriberAlreadyExistsException(HTTPException):
+    def __init__(self, msg: str):
+        super().__init__(
+            status_code=409,
+            detail={"message": msg}
+        )
+
+
+class EmailSubscriberNotFoundException(HTTPException):
+    def __init__(self, msg: str):
+        super().__init__(
+            status_code=400,
+            detail={"message": msg}
+        )

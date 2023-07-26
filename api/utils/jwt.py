@@ -59,6 +59,11 @@ def check_access_token_unexpired(access_token: str) -> bool:
     return True
 
 
+def check_refresh_token_correct(access_token, refresh_token):
+    refresh_token_json = _decode_jwt(refresh_token)
+    return refresh_token_json['access_token'] == access_token
+
+
 def get_id_from_access_token(access_token: str) -> str:
     access_token_data = _decode_jwt(access_token)
     try:

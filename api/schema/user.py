@@ -16,6 +16,15 @@ class UserPatchRequest(BaseModel):
     last_name: str | None = None
 
 
+class UserLoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class UserRefreshTokenRequest(BaseModel):
+    access_token: str
+    refresh_token: str
+
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
