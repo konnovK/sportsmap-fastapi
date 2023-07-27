@@ -12,6 +12,7 @@ from api.admin import setup_admin
 
 from api.router.user import router as user_router
 from api.router.facility import router as facility_router
+from api.router.facility_enums import router as facility_enums_router
 
 
 def create_app() -> FastAPI:
@@ -66,6 +67,7 @@ def create_app() -> FastAPI:
 
     app.include_router(user_router, prefix=ROUTE_PREFIX)
     app.include_router(facility_router, prefix=ROUTE_PREFIX)
+    app.include_router(facility_enums_router, prefix=ROUTE_PREFIX)
 
     return app
 

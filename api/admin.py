@@ -1,3 +1,4 @@
+import os
 from hashlib import md5
 from typing import Optional
 from fastapi import FastAPI
@@ -52,7 +53,7 @@ class AdminAuth(AuthenticationBackend):
 
 
 def setup_admin(app: FastAPI):
-    logger.info("SETUP ADMIN FOR APP")
+    logger.debug(f"[{os.getpid()}] SETUP ADMIN FOR APP")
 
     authentication_backend = AdminAuth(
         secret_key=_encode_token(
@@ -67,7 +68,7 @@ def setup_admin(app: FastAPI):
         title="KLogger Admin"
     )
 
-    logger.info("REGISTER ALL DB TABLES IN ADMIN")
+    logger.debug(f"[{os.getpid()}] REGISTER ALL DB TABLES IN ADMIN")
 
     class UserAdmin(ModelView, model=User):
         icon = 'fa-solid fa-user'

@@ -1,3 +1,4 @@
+import os
 import smtplib
 import uuid
 from email.header import Header
@@ -6,6 +7,7 @@ from email.mime.text import MIMEText
 from hashlib import md5
 
 import sqlalchemy as sa
+from loguru import logger
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -66,6 +68,10 @@ class EmailService:
             :param body:
             :return:
             """
+            if self.email_user is None or self.email_password is None or self.email_host is None:
+                logger.warning("FAILED SETUP EMAIL SERVICE, CAN'T SEND EMAIL.")
+                logger.debug(f"EMAIL: {self.subject}\n{self.body}")
+                return False
             try:
                 server = smtplib.SMTP_SSL(self.email_host)
                 server.login(self.email_user, self.email_password)
@@ -89,6 +95,8 @@ class EmailService:
         self.email_user = settings.SMTP_USER
         self.email_password = settings.SMTP_PASSWORD
         self.email_host = settings.SMTP_HOST
+        if self.email_user is None or self.email_password is None or self.email_host is None:
+            logger.warning(f"[{os.getpid()}] FAILED SETUP EMAIL SERVICE.")
 
     def _send_mail(self, email_to: str, subject: str, body: str) -> bool:
         """

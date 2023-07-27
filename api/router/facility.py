@@ -22,6 +22,16 @@ async def create_facility(
 
 ) -> FacilityResponse:
     facility = await app_context.facility_service.create(body)
+
+    app_context.email_service.send_mail_to_self(
+        "Был создан новый спортивный объект",
+        f"На сайте был создан новый спортивный объект:\n\n"
+        f"Название - {facility.name}\n"
+        f"Адрес - {facility.address}\n"
+        f"Пользователь - {facility.owner}\n"
+        f"Тип объекта - {facility.type.name}"
+    )
+
     return FacilityResponse.from_service_model(facility)
 
 
