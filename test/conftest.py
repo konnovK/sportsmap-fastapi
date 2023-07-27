@@ -1,3 +1,4 @@
+from api.app import create_app
 from db.db import DB
 from service.email_service import EmailService
 from service.facility_enum_service import FacilityEnumService
@@ -5,6 +6,7 @@ from service.facility_service import FacilityService
 from service.user_service import UserService
 from settings import Settings
 
+from fastapi.testclient import TestClient
 import pytest
 
 
@@ -42,3 +44,23 @@ async def facility_enum_service(db):
 @pytest.fixture()
 async def email_service(db, settings):
     yield EmailService(async_session=db.async_session, settings=settings)
+
+
+@pytest.fixture()
+async def app(settings, db):
+    app = create_app()
+
+    from api.context import AppContext
+    app_context = AppContext(settings)
+
+    from api import globals
+    globals.settings = settings
+    globals.app_context = app_context
+
+    print(globals.settings)
+    yield app
+
+
+@pytest.fixture()
+async def client(app):
+    yield TestClient(app)

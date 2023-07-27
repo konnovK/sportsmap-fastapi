@@ -11,9 +11,15 @@ from starlette.responses import JSONResponse
 from api.admin import setup_admin
 
 from api.router.user import router as user_router
+from api.router.facility import router as facility_router
 
 
-def setup_app(app: FastAPI):
+def create_app() -> FastAPI:
+    app = FastAPI(
+        title='SportsMap API',
+        version='2.0'
+    )
+
     @app.middleware("http")
     async def access_log(request: Request, call_next):
         start_time = time.time()
@@ -56,15 +62,15 @@ def setup_app(app: FastAPI):
 
     setup_admin(app)
 
-    app.include_router(user_router, prefix='/v1')
+    ROUTE_PREFIX = '/v1'
+
+    app.include_router(user_router, prefix=ROUTE_PREFIX)
+    app.include_router(facility_router, prefix=ROUTE_PREFIX)
+
+    return app
 
 
-app = FastAPI(
-    title='SportsMap API',
-    version='2.0'
-)
-
-setup_app(app)
+app = create_app()
 
 __all__ = [
     app
