@@ -1,5 +1,3 @@
-import time
-
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, BackgroundTasks
 from loguru import logger
 from starlette.responses import JSONResponse
@@ -10,7 +8,6 @@ from api.dependencies import get_app_context, admin_user
 import pandas as pd
 
 from api.schema.facility import FacilitySearchRequest
-from api.utils.geocode import set_facility_coords
 
 router = APIRouter(
     prefix='/excel',
@@ -66,6 +63,14 @@ async def import_excel(
     else:
         logger.warning(f"FAILED WITH USING Yandex Geocoder")
 
+    app_context.email_service.send_mail_to_self(
+        'Был загружен Excel документ',
+        f'На сайт был загружен Excel документ\n\n'
+        f'Размер файла - {excel_file.size / 1000:.3f} KB\n'
+        f'{len(facilities)} спортивных объектов содержал документ\n'
+        f'{len(facilities_in_db)} из них было добавлено в базу данных'
+    )
+
     return JSONResponse([str(f['id']) for f in facilities_in_db], status_code=200)
 
 
@@ -109,9 +114,8 @@ async def export_excel(
         with open(excel_filename, 'rb') as file_reader:
             file_bytes = file_reader.read()
     except Exception as e:
-        raise
-        # logger.error(e)
-        # raise HTTPException(status_code=500, detail='Ошибка сервера при работе с файловой системой')
+        logger.error(e)
+        raise HTTPException(status_code=500, detail='Ошибка сервера при работе с файловой системой')
 
     url = app_context.s3_service.s3_upload_bytes(
         file_bytes,
