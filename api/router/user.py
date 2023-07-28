@@ -10,7 +10,7 @@ from api.schema.user import (
     UserPatchRequest,
     UserResponse,
     UserLoginRequest,
-    UserRefreshTokenRequest
+    UserRefreshTokenRequest, UserRefreshPassword
 )
 from api.utils.jwt import create_jwt, get_id_from_access_token, JWTException, check_refresh_token_correct
 from service.exc import UserNotFoundServiceException
@@ -119,6 +119,12 @@ async def refresh_token(
 
 
 @router.post('/password-refresh/{secret}')
-async def refresh_password():
-    # TODO
-    raise HTTPException(501)
+async def refresh_password(
+    secret: str,
+    body: UserRefreshPassword,
+    app_context: AppContext = Depends(get_app_context)
+):
+    user_password_refresh = await app_context.email_service.get_by_secret_email_password_refresh(secret)
+    email = user_password_refresh.email
+    await app_context.user_service.update_password_by_email(email, body.new_password)
+    await app_context.email_service.delete_by_email_email_password_refresh(email)

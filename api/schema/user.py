@@ -25,6 +25,11 @@ class UserRefreshTokenRequest(BaseModel):
     access_token: str
     refresh_token: str
 
+
+class UserRefreshPassword(BaseModel):
+    new_password: str
+
+
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

@@ -15,6 +15,7 @@ from api.router.facility import router as facility_router
 from api.router.facility_enums import router as facility_enums_router
 from api.router.excel import router as excel_router
 from api.router.photo import router as photo_router
+from api.router.email import router as email_router
 
 
 def create_app() -> FastAPI:
@@ -72,6 +73,7 @@ def create_app() -> FastAPI:
     app.include_router(facility_enums_router, prefix=ROUTE_PREFIX)
     app.include_router(excel_router, prefix=ROUTE_PREFIX)
     app.include_router(photo_router, prefix=ROUTE_PREFIX)
+    app.include_router(email_router, prefix=ROUTE_PREFIX)
 
     return app
 

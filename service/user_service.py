@@ -110,6 +110,17 @@ class UserService:
                 raise UserNotFoundServiceException("Пользователь с таким id не существует.")
             return UserServiceModel.model_validate(selected_user)
 
+    async def update_password_by_email(self, email: str, password: str) -> UserServiceModel:
+        async with self.async_session() as session:
+            session: AsyncSession
+            user: User = (await session.execute(sa.select(User).where(User.email == email))).scalar()
+            if user is None:
+                raise UserNotFoundServiceException("Пользователь с таким email не существует.")
+            user.password_hash = UserService._hash_password(email, password)
+            await session.commit()
+            await session.refresh(user)
+        return UserServiceModel.model_validate(user)
+
     async def get_by_email_and_password(self, email: str, password: str) -> UserServiceModel:
         """
         :raise UserNotFoundServiceException:
@@ -132,11 +143,12 @@ class UserService:
             selected_user_id = (await session.execute(sa.select(User.id).where(User.id == pk))).scalar()
             return selected_user_id is not None
 
-    async def check_exists_by_email(self, email: str) -> bool:
+    async def check_exists_by_email(self, email: str):
         async with self.async_session() as session:
             session: AsyncSession
             selected_user_id = (await session.execute(sa.select(User.id).where(User.email == email))).scalar()
-            return selected_user_id is not None
+            if selected_user_id is None:
+                raise UserNotFoundServiceException("Пользователя с таким email не существует.")
 
     async def check_is_admin_by_id(self, pk: USER_PK_TYPE) -> bool:
         """
@@ -148,5 +160,5 @@ class UserService:
             session: AsyncSession
             is_admin = (await session.execute(sa.select(User.admin).where(User.id == pk))).scalar()
             if is_admin is None:
-                raise UserNotFoundServiceException
+                raise UserNotFoundServiceException("Пользователя с таким id не существует.")
             return is_admin

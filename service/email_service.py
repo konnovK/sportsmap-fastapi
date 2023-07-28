@@ -60,17 +60,14 @@ class EmailService:
             msg.attach(_attach)
             return msg
 
-        def send(self):
+        def send(self) -> bool:
             """
             returns `True` if mail was sent, `False` otherwise.
-            :param email_to:
-            :param subject:
-            :param body:
             :return:
             """
             if self.email_user is None or self.email_password is None or self.email_host is None:
                 logger.warning("FAILED SETUP EMAIL SERVICE, CAN'T SEND EMAIL.")
-                logger.debug(f"EMAIL: {self.subject}\n{self.body}")
+                logger.debug(f"EMAIL TO <{self.email_to}>: {self.subject}\n{self.body}")
                 return False
             try:
                 server = smtplib.SMTP_SSL(self.email_host)
@@ -148,13 +145,14 @@ class EmailService:
         """
         async with self.async_session() as session:
             session: AsyncSession
-            email_password_refresh = EmailPasswordRefresh(secret=secret, email=email)
             try:
+                await session.execute(sa.delete(EmailPasswordRefresh).where(EmailPasswordRefresh.email == email))
+                email_password_refresh = EmailPasswordRefresh(secret=secret, email=email)
                 session.add(email_password_refresh)
                 await session.commit()
                 await session.refresh(email_password_refresh)
             except IntegrityError:
-                raise EmailPasswordRefreshAlreadyExistsException
+                pass
         return EmailPasswordRefreshServiceModel.model_validate(email_password_refresh)
 
     async def delete_by_email_email_password_refresh(self, email: str):
@@ -166,11 +164,7 @@ class EmailService:
         """
         async with self.async_session() as session:
             session: AsyncSession
-            prs = (await session.execute(
-                sa.select(EmailPasswordRefresh).where(EmailPasswordRefresh.email == email)
-            )).scalars().all()
-            for pr in prs:
-                await session.delete(pr)
+            await session.execute(sa.delete(EmailPasswordRefresh).where(EmailPasswordRefresh.email == email))
             await session.commit()
 
     async def get_by_secret_email_password_refresh(self, secret: str) -> EmailPasswordRefreshServiceModel:
@@ -186,7 +180,7 @@ class EmailService:
                 .where(EmailPasswordRefresh.secret == secret)
             )).scalar()
             if pr is None:
-                raise EmailPasswordRefreshNotFoundException
+                raise EmailPasswordRefreshNotFoundException('Ссылка на обновление пароля некорректна.')
         return EmailPasswordRefreshServiceModel.model_validate(pr)
 
     async def create_email_subscriber(self, secret: str, email: str) -> EmailSubscriberRefreshServiceModel:
@@ -205,10 +199,10 @@ class EmailService:
                 await session.commit()
                 await session.refresh(email_subscriber)
             except IntegrityError:
-                raise EmailSubscriberAlreadyExistsException
+                raise EmailSubscriberAlreadyExistsException("Вы уже подписаны на наши обновления.")
         return EmailSubscriberRefreshServiceModel.model_validate(email_subscriber)
 
-    async def delete_by_secret_email_subscriber(self, secret: str):
+    async def delete_by_secret_email_subscriber(self, secret: str) -> bool:
         """
         :raise EmailSubscriberNotFoundException:
         :param secret:
@@ -220,6 +214,7 @@ class EmailService:
                 sa.select(EmailSubscriber).where(EmailSubscriber.secret == secret)
             )).scalars().first()
             if subscriber is None:
-                raise EmailSubscriberNotFoundException
+                return False
             await session.delete(subscriber)
             await session.commit()
+        return True
