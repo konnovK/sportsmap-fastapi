@@ -49,7 +49,7 @@ class FacilityCreateServiceModel(BaseModel):
 
     site: str | None = None
     phone_number: str | None = None
-    document: str | None = None
+    document: str | int | None = None
     note: str | None = None
 
     working_hours: dict = EMPTY_WORKING_HOURS
@@ -84,7 +84,7 @@ class FacilityPatchServiceModel(BaseModel):
 
     site: str | None = None
     phone_number: str | None = None
-    document: str | None = None
+    document: str | int | None = None
     note: str | None = None
 
     working_hours: dict | None = None
@@ -139,7 +139,7 @@ class FacilityServiceModel(BaseModel):
 
     site: str | None = None
     phone_number: str | None = None
-    document: str | None = None
+    document: str | int | None = None
     note: str | None = None
 
     working_hours: dict
@@ -150,3 +150,17 @@ class FacilityServiceModel(BaseModel):
     paying_type: list[FacilityTypeServiceModel]
     age: list[FacilityTypeServiceModel]
     photo: list[FacilityPhotoServiceModel]
+
+    def to_dict(self) -> dict:
+        type = self.type.name
+        owning_type = None if self.owning_type is None else self.owning_type.name
+        covering_type = None if self.covering_type is None else self.covering_type.name
+        paying_type = [fpt.name for fpt in self.paying_type]
+        age = [fpt.name for fpt in self.age]
+        f = self.model_dump()
+        f['type'] = type
+        f['owning_type'] = owning_type
+        f['covering_type'] = covering_type
+        f['paying_type'] = paying_type
+        f['age'] = age
+        return f

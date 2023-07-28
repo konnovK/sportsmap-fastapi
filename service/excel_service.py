@@ -137,11 +137,14 @@ class ExcelService:
             "address": f_db.address
         }
 
-    async def add_excel_facilities_to_db(self, async_session, facilities: list[dict]):
+    async def add_excel_facilities_to_db(self, facilities: list[dict]):
         # logger.debug(f'TRY TO IMPORT {len(facilities)} FACILITIES FROM EXCEL TO DB')
+        async_session = self.async_session
         async with async_session() as session:
             session: AsyncSession
             facilities_in_db = []
+            i = 0
+            all = len(facilities)
             for facility in facilities:
                 try:
                     _ = facility.pop('n')
@@ -149,16 +152,17 @@ class ExcelService:
                     pass
                 start = time.time()
                 try:
-                    logger.debug(f'ADD: TRY TO ADD FACILITY')
                     f_db = await self._add_excel_facility_to_db(session, facility)
-                    logger.debug(f'SUCCESS: ADD FACILITY {time.time() - start : 0.3f}MS: f{f_db.get("id")}')
+                    logger.debug(f'{i} / {all} | SUCCESS: ADD FACILITY: {time.time() - start : 0.3f}MS: f{f_db.get("id")}')
                     facilities_in_db.append(f_db)
                 except DataError:
-                    logger.debug(f'ERROR: {time.time() - start : 0.3f}MS: DataError')
+                    logger.debug(f'{i} / {all} | ERROR: {time.time() - start : 0.3f}MS: DataError')
                     await session.rollback()
                 except IntegrityError:
-                    logger.debug(f'ERROR: {time.time() - start : 0.3f}MS: IntegrityError')
+                    logger.debug(f'{i} / {all} | ERROR: {time.time() - start : 0.3f}MS: IntegrityError')
                     await session.rollback()
+                finally:
+                    i += 1
             await session.commit()
             return facilities_in_db
 

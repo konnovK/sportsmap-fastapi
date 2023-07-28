@@ -1,4 +1,8 @@
+import hashlib
+import os
 import ssl
+
+from loguru import logger
 
 from db.schema import metadata
 from settings import Settings
@@ -9,6 +13,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 class DB:
     def __init__(self, settings: Settings):
+        logger.debug(f'[{os.getpid()}] INIT DB')
         self.settings = settings
 
         db_conn_str = settings.API_DB_URL
@@ -24,18 +29,28 @@ class DB:
         )
         self.async_session = async_sessionmaker(self.engine, expire_on_commit=False)
 
+    @staticmethod
+    def _hash_password(email: str, password: str) -> str:
+        SALT = "brg568fje54r6kt32dyj7z89drsh"
+        return hashlib.sha256((password + email + SALT).encode()).hexdigest()
+
     async def create_super_user(self):
         if self.settings.API_SUPERUSER_EMAIL is not None and self.settings.API_SUPERUSER_PASSWORD is not None:
             async with self.async_session() as session:
                 from db.model.user import User
                 try:
-                    await User.create(session, {
-                        'email': self.settings.API_SUPERUSER_EMAIL,
-                        'password': self.settings.API_SUPERUSER_PASSWORD,
-                        'admin': True
-                    })
+                    user = User(
+                        email=self.settings.API_SUPERUSER_EMAIL,
+                        password_hash=DB._hash_password(
+                            self.settings.API_SUPERUSER_EMAIL, self.settings.API_SUPERUSER_PASSWORD
+                        ),
+                        admin=True,
+                        active=True
+                    )
+                    session.add(user)
                     await session.commit()
-                except Exception:
+                except Exception as err:
+                    logger.warning(err)
                     pass
 
     async def create_all_enums(self):
@@ -108,7 +123,8 @@ class DB:
                     await FacilityAge.get_or_create(session, f)
 
                 await session.commit()
-            except Exception:
+            except Exception as err:
+                logger.warning(err)
                 pass
 
     async def recreate_tables(self):

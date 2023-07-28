@@ -68,7 +68,7 @@ class FacilityRequest(BaseModel):
 
     site: str | None = None
     phone_number: str | None = None
-    document: str | None = None
+    document: str | int | None = None
     note: str | None = None
 
     working_hours: dict | None = None
@@ -109,7 +109,7 @@ class FacilityPatchRequest(BaseModel):
 
     site: str | None = None
     phone_number: str | None = None
-    document: str | None = None
+    document: str | int | None = None
     note: str | None = None
 
     working_hours: dict | None = None
@@ -191,7 +191,7 @@ class FacilityResponse(BaseModel):
 
     site: str | None = None
     phone_number: str | None = None
-    document: str | None = None
+    document: str | int | None = None
     note: str | None = None
 
     working_hours: dict
