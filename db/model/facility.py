@@ -83,7 +83,6 @@ class FacilityAge(Base):
         back_populates='age', lazy='selectin'
     )
 
-
     def __str__(self):
         return self.name
 

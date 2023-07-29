@@ -1,8 +1,6 @@
 import asyncio
 
 from db.db import DB
-from service.model.user_model import UserCreateServiceModel, UserUpdateServiceModel
-from service.user_service import UserService
 from settings import Settings
 
 

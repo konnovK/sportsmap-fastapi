@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Response
+from fastapi import APIRouter, Depends, Response
 from loguru import logger
 
 from api.context import AppContext
@@ -44,7 +44,7 @@ async def email_subscribe(
     app_context: AppContext = Depends(get_app_context),
 ):
     secret = app_context.email_service.create_email_secret(body.email)
-    subscribe = await app_context.email_service.create_email_subscriber(secret, body.email)
+    await app_context.email_service.create_email_subscriber(secret, body.email)
 
     logger.debug(f'SUBSCRIBE {body.email} {secret}')
 

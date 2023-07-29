@@ -153,7 +153,9 @@ class ExcelService:
                 start = time.time()
                 try:
                     f_db = await self._add_excel_facility_to_db(session, facility)
-                    logger.debug(f'{i} / {all} | SUCCESS: ADD FACILITY: {time.time() - start : 0.3f}MS: f{f_db.get("id")}')
+                    logger.debug(
+                        f'{i} / {all} | SUCCESS: ADD FACILITY: {time.time() - start : 0.3f}MS: f{f_db.get("id")}'
+                    )
                     facilities_in_db.append(f_db)
                 except DataError:
                     logger.debug(f'{i} / {all} | ERROR: {time.time() - start : 0.3f}MS: DataError')

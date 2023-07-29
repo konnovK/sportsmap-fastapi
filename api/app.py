@@ -21,7 +21,7 @@ from api.router.email import router as email_router
 def create_app() -> FastAPI:
     app = FastAPI(
         title='SportsMap API',
-        version='2.0'
+        version='1.2.0'
     )
 
     @app.middleware("http")
@@ -48,7 +48,7 @@ def create_app() -> FastAPI:
     def exception_handler(request: Request, exception: Exception):
         if isinstance(exception, ValidationException):
             exception: ValidationException
-            return JSONResponse(content=exception.errors(),status_code=422)
+            return JSONResponse(content=exception.errors(), status_code=422)
         elif isinstance(exception, starlette.exceptions.HTTPException):
             exception: HTTPException
             exception_body = exception.detail

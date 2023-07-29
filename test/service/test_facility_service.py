@@ -171,7 +171,7 @@ async def test_facility_patch_already_exists(facility_service):
     }
 
     facility1 = await create_facility(facility_service, facility_create_data1)
-    facility2 = await create_facility(facility_service, facility_create_data2)
+    await create_facility(facility_service, facility_create_data2)
 
     with pytest.raises(FacilityAlreadyExistsServiceException):
         await facility_service.patch(

@@ -13,8 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.model.email import EmailPasswordRefresh, EmailSubscriber
 
-from service.exc import EmailPasswordRefreshAlreadyExistsException, EmailPasswordRefreshNotFoundException, \
-    EmailSubscriberAlreadyExistsException, EmailSubscriberNotFoundException
+from service.exc import EmailPasswordRefreshNotFoundException, EmailSubscriberAlreadyExistsException
 from service.model.email_model import EmailPasswordRefreshServiceModel, EmailSubscriberRefreshServiceModel
 
 from settings import Settings

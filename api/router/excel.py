@@ -58,10 +58,10 @@ async def import_excel(
     )
 
     if app_context.settings.YANDEX_GEOCODER_API_KEY is not None:
-        yandex_api_key = app_context.settings.YANDEX_GEOCODER_API_KEY
         # TODO: в фоне сделать задачу на поход в геокодер для каждого объекта (не более 1000)
+        pass
     else:
-        logger.warning(f"FAILED WITH USING Yandex Geocoder")
+        logger.warning("FAILED WITH USING Yandex Geocoder")
 
     app_context.email_service.send_mail_to_self(
         'Был загружен Excel документ',
