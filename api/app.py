@@ -30,6 +30,8 @@ def create_app() -> FastAPI:
         response: Response = await call_next(request)
         process_time = time.time() - start_time
         response.headers["X-Process-Time"] = str(process_time)
+        logger.debug(f'[{request.client.host}] [{os.getpid()}] {request.url} {request.headers.get("host")}')
+        logger.debug(f'[{request.client.host}] [{os.getpid()}] {request.headers}')
         logger.info(
             f'[{request.client.host}] [{os.getpid()}] '
             f'{request.method} {request.url.path} '
